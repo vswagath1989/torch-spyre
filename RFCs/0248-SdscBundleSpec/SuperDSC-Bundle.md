@@ -341,6 +341,6 @@ Choose one of the following:
 Will implement it.
 
 #### Tracking issue
-https://github.com/torch-spyre/torch-spyre/issues/682
+https://github.com/torch-spyre/torch-spyre/issues/248
 
 #### Exceptions
