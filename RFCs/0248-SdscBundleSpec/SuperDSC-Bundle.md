@@ -32,7 +32,7 @@ The interface is essential to connect the torch-spyre frontend compiler with the
 * Shapes of the operations and tensors is allowed to be static or symbolic
 * The start address of the tensors in DDR and LX is allowed be a fixed number or symbolic
 
-The `SuperDSC-Bundle` specification is used by the Deeptools backend compiler to produce `SpyreCode` containing the job binary, a job plan among others. In the scenario, where either the start-address and/or shapes are symbolic, `SpyreCode` allows for the program binary to contain variables that need to be substituted or corrected before execution. The mechanism to effect program correction just-in-time before the job is lauched onto spyre is also produced by the backend compiler as part of `SpyreCode`.
+The `SuperDSC-Bundle` specification is used by the Deeptools backend compiler to produce `SpyreCode` containing the job binary, a job plan and other compiled artifacts. In the scenario, where either the start-address and/or shapes are symbolic, `SpyreCode` allows for the program binary to contain variables that need to be substituted or corrected before execution. The mechanism to effect program correction just-in-time before the job is launched onto spyre is also produced by the backend compiler as part of `SpyreCode`.
 
 NOTES:
 * Frontend/Backend compiler interface will transition to a new interface called Kernel Tile Intermediate Representation (KTIR) in the future (https://github.com/torch-spyre/torch-spyre/blob/main/RFCs/0682-KtirSpec/0682-KtirSpecRFC.md)
@@ -60,7 +60,7 @@ sdscbundle.sdsc_execute (%A_start_address, %B_start_address) {sdsc_filename="sds
 The operation does not **return** anything.
 
 The operation **attributes** are:
-* `sdsc_filename` the filename of the specific sdsc.json to instantiate. As one bundle can contain multiple sdsc, different names must be chosen for each json file and here we can refer to the exact one of interest.
+* `sdsc_filename` the relavite path and filename of the specific sdsc.json to instantiate, relative to the location of the mlir file. As one bundle can contain multiple sdsc, different names must be chosen for each json file and here we can refer to the exact one of interest.
 * `symbol_ids` list of the symbol ids used inside the sdsc, if any, to represent symbolic start addresses or sizes
 
 The operation **operands** are the SSA variables corresponding to the values to be assigned to the symbols listed in `symbol_ids`, passed in the same order as the symbol ids. These values can be constants (`arith.constant`), or the result of affine expressions, like [`affine.apply`](https://mlir.llvm.org/docs/Dialects/Affine/#affineapply-affineaffineapplyop). The affine expressions can be comprised of constants and loop iterators. Having actual symbols in mlir will be supported through the next revision of the spec.
@@ -160,7 +160,7 @@ The individual fields of the SuperDSC to express an operation and its core mappi
           * for LX, alpha=coordinate offset across slices, factor=number of slices in dimension
         * corelet fold: N/A → alpha=1, factor=1
         * row fold: N/A → alpha=1, factor=1
-      * **NOTE**: the tensor allocation need NOT be compatible with compute work division i.e, data in one core is directly available for compute in another core. The backend compiler will ensure proper data movement across cores
+      * **NOTE**: the tensor allocation need NOT be compatible with compute work division i.e, data in one core is directly available for compute in another core. The backend compiler will ensure proper data movement across cores. This functionality is not yet available in the backend, it will be implemented in a future iteration.
 * Symbolic information
   * Link dsc dimensions to symbols
     * `std::map<PrimaryDimTypes, std::vector<VariableSymbol>> dimToSymbolMapping_` in `sdsc.dscs_[0]`
