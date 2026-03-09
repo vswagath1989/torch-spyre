@@ -136,7 +136,6 @@ The individual fields of the SuperDSC to express an operation and its core mappi
       * 1 is normal, -1 is reduced/broadcasted, -2 is reduced/broadcasted stick dimension
       * `std::vector<double> scale_` in `sdsc.dscs_[0].labeledDs_[x]`
       * order matches layoutDimOrder_ in primaryDsInfo
-      * likely to transition to a new field, but not yet implemented
     * For indirectly accessed tensors (e.g. Paged tensors)
     * fill maxDimSizes_ in AllocateNode of value tensor to set page size
     * mark value/index allocations as such and link them to each other
@@ -261,23 +260,33 @@ OpFuncs are specified within sdsc.json as field `OpFuncs opFuncName` in `sdsc.ds
 
 ### Stick constraints for the operations
 
-In general, there are stick layout constraints (listed below) but no overall tensor layout constraints. In any operation, any layout outside of the stick is acceptable and every tensor can have a different layout.
+Each class of operation imposes constraints on the stick composition of its constituent tensors restricting which dimension can be present in the stick. Tensors will need to be padded to meet the stick constraints. There are noconstraints on the tensor layout beyond a stick.
 
-#### Matmul
-Given `reduction_dim` as the dimension that gets reduced from the input, `generated_dim` as the dimension that gets generated, `preserved_dim` as the dimension that is preserved from input to output, we have the following requirements:
-* output: only `generated_dim` in the stick, for all precisions
-* fp16
-  * input: only `reduction_dim` in the stick
-  * kernel: only `generated_dim` in the stick
-* fp8/int8
-  * input: only `reduction_dim` in the stick
-  * kernel: [`reduction_dim`=2, `generated_dim`=64]
-* int4
-  * input: [`reduction_dim`=16, `preserved_dim`=2, `reduction_dim`=8]
-  * kernel: [`reduction_dim`=4, `generated_dim`=64]
+Note: Stick constraints in an operation can cause a ripple effect---a tensor may need to padded even in its non-stick dimension because that dimension appers in the stick of another tensor feeding to the same operation. This is needed to ensure span of a dimension is consistent across all tensors.
+
+#### BatchMatmul
+The BatchMatmul op takes 2 inputs (Input1, Input2) and produces an output (Output1). It has 4 types of semantic dimensions:
+* `reduction_dim`: Dimension that is present in Input1, Input2 and NOT in Output1. There can be only be a single dimension in this category. Note: this dimension gets reduced as part of the dot-product.
+* `generated_dim`: Dimension that is present in Input2, Output1 and NOT in Input1. There can be only be a single dimension in this category.
+* `preserved_dim`: Dimension that is present in Input1 and Output1 and NOT in Input2. There can be upto 2 dimensions in this category.
+* `noreuse_dim`: Dimension that is present in all tensors - Input1, Input2 and Output1. There can be upto 2 dimensions in this category.
+
+The following are the stick constraints that different precisons.
+* Output1 tensor:
+  * Stick composed of [`generated_dim`=64]. Note: Output1 is always in DF16 precision
+* Input1 tensor:
+  * DF16: Stick composed of [`reduction_dim`=64]
+  * FP8/INT8: Stick composed of [`reduction_dim`=128]
+  * INT4: Stick composed of 2 dimensions as: [`reduction_dim`=16, `preserved_dim`=2, `reduction_dim`=8]. Note: total of 256 elements in each stick.
+* Input2 tensor:
+  * DF16: Stick composed of [`generated_dim`=64]
+  * FP8/INT8: Stick composed of [`reduction_dim`=2, `generated_dim`=64]
+  * INT4: Stick composed of [`reduction_dim`=4, `generated_dim`=64]
+
+Note: In Matmul, Input2 must also be padded along `reduction_dim` (which is not in its stick). This is because `reduction_dim` is part of the stick of Input1 and Input2 therefore needs to be padded for their dimension spans to be consistent.
 
 #### Convolution
-Same as matmul with the only difference of the int4 input stick layout: [`reduction_dim`=16, `W`=2, `reduction_dim`=8], where `W` is the width in pixels according to `NHWC` notation.
+Same as matmul with the only difference of the INT4 Input1 stick layout: [`reduction_dim`=16, `W`=2, `reduction_dim`=8], where `W` is the width in pixels according to `NHWC` notation.
 
 #### Reduction
 For sum/max/min/mean/absmax/exx2:
