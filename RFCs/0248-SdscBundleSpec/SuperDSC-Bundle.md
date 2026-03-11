@@ -188,8 +188,8 @@ The individual fields of the SuperDSC to express an operation and its core mappi
 
 OpFuncs are specified within sdsc.json as field `OpFuncs opFuncName` in `sdsc.dscs_[0].computeOp_[0]`.
 
-| Category | OpFunc enum | OpFunc string | Notes
-| --- | --- | --- | -- |
+| Category | OpFunc enum | OpFunc string | Constants | Notes
+| --- | --- | --- | -- | -- |
 |  Matmul | BATCHMATMUL_FP8_FWD  |   "batchmatmulfp8"
 |         | BATCHMATMUL_FWD  |   "batchmatmul"
 |         | BATCHMATMUL_INT4_FWD  |   "batchmatmulint4"
@@ -198,7 +198,7 @@ OpFuncs are specified within sdsc.json as field `OpFuncs opFuncName` in `sdsc.ds
 |         | CONV2D_FWD  |   "conv2d"
 |         | CONV2D_INT4_FWD  |   "conv2dint4"
 |         | CONV2D_INT8_FWD  |   "conv2dint8"
-|  Broadcast    |  ADD  |   "add"  | Broadcast supported on any number of dimensions and on one or both inputs
+|  Broadcast    |  ADD  |   "add"  |   | Broadcast supported on any number of dimensions and on one or both inputs
 |         | BATCHNORM_FWD  |   "batchnormfwd"
 |         | BIASADD  |   "biasadd"
 |         | EQUAL  |   "equal"
@@ -215,13 +215,13 @@ OpFuncs are specified within sdsc.json as field `OpFuncs opFuncName` in `sdsc.ds
 |         | SUB  |   "sub"
 |         | WHERE3  |   "where3"
 |  Unary  | ABS  |   "abs"
-|         | CLIP_FWD  |   "clip"
-|         | EXP_FWD  |   "exp"
+|         | CLIP_FWD  |   "clip"  |     `clipMin`, `clipMax`: minimum and maximum values to clip at
+|         | EXP_FWD  |   "exp"  |  
 |         | FAST_EXP_FWD  |   "fastexp"
 |         | FAST_SIGMOID_FWD  |   "fastsigmoid"
 |         | GELU_FWD  |   "gelufwd"
 |         | IDENTITY  |   "identity"
-|         | LAYERNORM_SCALE  |   "layernormscale"
+|         | LAYERNORM_SCALE  |   "layernormscale"  | `eps`: a small value added to the denominator in the calculation of layernorm for numerical stability
 |         | LEAKYRELU_FWD  |   "leakyrelufwd"
 |         | LOG_FWD  |   "log"
 |         | MISH_FWD  |   "mish"
@@ -231,25 +231,25 @@ OpFuncs are specified within sdsc.json as field `OpFuncs opFuncName` in `sdsc.ds
 |         | RELU6_FWD  |   "relu6fwd"
 |         | RSQRT  |   "rsqrt"
 |         | SIGMOID_FWD  |   "sigmoid"
-|         | SOFTPLUS  |   "softplus"
+|         | SOFTPLUS  |   "softplus"  | `softplusBeta`: value for the Softplus formulation <br>`softplusThresh`: values above this revert to a linear function
 |         | SILU_FWD  |   "silu"
 |         | SQRT_FWD  |   "sqrt"
 |         | TANH_FWD  |   "tanh"
 |  Reduction  | ABSMAX_NONSTICK  |   "absmaxnonstick"
 |         | ABSMAX  |   "absmax"
 |         | EXX2_ZEROMEAN  |   "exx2_zeromean"
-|         | EXX2  |   "exx2"
+|         | EXX2  |   "exx2"  | `exx2scale`
 |         | MAX_NONSTICK  |   "maxnonstick"
 |         | MAX  |   "max"
-|         | MEAN_NONSTICK  |   "meannonstick"
-|         | MEAN  |   "mean"
+|         | MEAN_NONSTICK  |   "meannonstick" | `scaling_factor`: reciprocal of the number of elements that are reduced, combined across all the reduction dimensions
+|         | MEAN  |   "mean"  | `scaling_factor`: reciprocal of the number of elements that are reduced, combined across all the reduction dimensions
 |         | MIN_NONSTICK  |   "minnonstick"
 |         | MIN  |   "min"
-|         | QUANT_SCALE_PER_TOKEN_FP8  |   "quantscalepertokenfp8"
+|         | QUANT_SCALE_PER_TOKEN_FP8  |   "quantscalepertokenfp8"  | `clipMin`, `clipMax`: minimum and maximum values to clip abs(input) distribution, typically smallest and largest positive values in the unquantized (input tensor) datatype <br>`mulConst`: reciprocal of the maximum value in the quantized datatype (for FP8<1,4,3> this is `1/448`)
 |         | QUANT_SCALE_PER_TOKEN  |   "quantscalepertoken"
 |         | SUM_NONSTICK  |   "sumnonstick"
 |         | SUM  |   "sum"
-|  Pooling  | AVGPOOL_FWD  |   "avgpoolfwd"
+|  Pooling  | AVGPOOL_FWD  |   "avgpoolfwd" | `nmap`: reciprocal of the product of kernel size (`1/(kh*kw)`)
 |         | AVGPOOL_NMAP_FWD  |   "avgpoolnmapfwd"
 |         | DEPTHWISE_CONV_FWD  |   "depthwiseconv2dnative"
 |         | MAXPOOL_FWD  |   "maxpoolfwd"
