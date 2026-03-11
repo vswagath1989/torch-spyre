@@ -323,7 +323,7 @@ TBD
 
 ## Examples
 
-Multiple examples in increasing order of complexity are available [here](../test/Dialects/).
+Multiple examples in increasing order of complexity are available [here](examples/).
 
 ## **Metrics **
 * Ability to express all torch operators that are mappable to AIU (post-inductor transformations and decompositions)
