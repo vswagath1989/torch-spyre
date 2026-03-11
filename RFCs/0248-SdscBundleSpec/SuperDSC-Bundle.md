@@ -263,7 +263,18 @@ OpFuncs are specified within sdsc.json as field `OpFuncs opFuncName` in `sdsc.ds
 | Scan    | MASK_BY_INDEX  |   "maskbyindex"
 |         | TOPK_INDEX  |   "topkindex"
 |         | TOPK_VALUE  |   "topkvalue"
-| Quantization | TBD  |   TBD
+| Quantization | CSQ_INT4_WT  |   "csqint4wt"    |  `scaleact`: pre-quantization scale factor <br>`shiftact`: pre-quantization offset  |  Apply scale and shift to DL16 and quantize to INT4. Pack elements from four input sticks in a dimension different from the input stick dimension, alternating after every element
+|         | CSQ_INT4  |   "csqint4"   |  `scaleact`: pre-quantization scale factor <br>`shiftact`: pre-quantization offset  |  Apply scale and shift to DL16 and quantize to INT4. Alternating every 8 elements, pack elements from four input sticks: first two sticks in the same dimension as the input stick dimension, then two such groups taken across a dimension different from the input stick dimension
+|         | CSQ_INT8_CH  |   "csqint8ch"   |  `scaleact`: pre-quantization scale factor <br>`shiftact`: pre-quantization offset  |  Apply scale and shift to DL16 and quantize to INT8. Pack elements from two input sticks in the same dimension as the input stick dimension, alternating every 8 elements
+|         | CSQ_INT8_MB  |   "csqint8mb"   |  `scaleact`: pre-quantization scale factor <br>`shiftact`: pre-quantization offset  |  Apply scale and shift to DL16 and quantize to INT8. Pack elements from two input sticks in a dimension different from the input stick dimension, alternating  every 8 elements
+|         | CSQ_INT8_WT  |   "csqint8wt"   |  `scaleact`: pre-quantization scale factor <br>`shiftact`: pre-quantization offset  |  Apply scale and shift to DL16 and quantize to INT8. Pack elements from two input sticks in a dimension different from the input stick dimension, alternating after every element
+|         | DL16TOFP32  |   "dl16tofp32"   |  |  Convert DL16 to FP32. For every stick of input, two sticks will be produced
+|         | DL16TOFP32  |   "fp32todl16"   |  |  Quantize FP32 to DL16. Pack elements from two input sticks in the same dimension as the input stick dimension, alternating every 8 elements
+|         | FP8TODL16  |   "fp8todl16"   |  |  Convert FP8<1,4,3> to DL16. For every stick of input, two sticks will be produced
+|         | Q_FP8_CH  |   "qfp8ch"   |  |  Quantize DL16 to FP8<1,4,3>. Pack elements from two input sticks in the same dimension as the input stick dimension, alternating every 8 elements
+|         | Q_FP8_MB  |   "qfp8mb"   |  |  Quantize DL16 to FP8<1,4,3>. Pack elements from two input sticks in a dimension different from the input stick dimension, alternating every 8 elements
+|         | Q_FP8_WT  |   "qfp8wt"   |  |  Quantize DL16 to FP8<1,4,3>. Pack elements from two input sticks in a dimension different from the input stick dimension, alternating after every element
+
 
 ### Stick constraints for the operations
 
@@ -319,7 +330,13 @@ Stick should only have the normalization dimension in it
 Window dimensions not allowed in the stick, any number of other dimensions can be in the stick
 
 #### Quantization operations
-TBD
+For all down-casting operations
+* the input should always have only one dimension in the stick (DL16: [`inpdim`=64], FP32: [`inpdim`=32])
+* for the `wt` family of quantizations, output stick should have one more dimension innermost (INT8/FP8: [`otherdim`=2,`inpdim`=64], INT4: [`otherdim`=4,`inpdim`=64])
+* for the `mb` family of quantizations, output stick should have one more dimension inserted at the slice level (INT8/FP8: [`inpdim`=8, `otherdim`=2, `inpdim`=8], INT4: [`inpdim`=16, `otherdim`=2, `inpdim`=8])
+* for the `ch` family of quantizations, output stick still only has one dimension, just more elements (INT8/FP8: [`inpdim`=128])
+
+For all up-casting operations, both input and output should have the same only one dimension in the stick.
 
 ## Examples
 
