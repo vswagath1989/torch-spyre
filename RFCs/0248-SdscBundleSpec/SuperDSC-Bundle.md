@@ -106,7 +106,7 @@ The individual fields of the SuperDSC to express an operation and its core mappi
       * `DataStructDims N_` in `sdsc.dscs_[0]`
     * sizes per dimension for a single core
       * `std::map<int, dsc2::DataStage> dataStageParam_` in `sdsc.dscs_[0]`
-    * add one entry with key 0, and fill ss_ and el_ with same data (name should be “core”)
+    * add one entry with key 0, and fill `ss_` and `el_` with same data (name should be “core”)
     * for window/padded operations, add padding information in both datastages above
       * `std::map<PrimaryDimTypes, DimPaddingSizes> paddingSizes_` in `DataStructDims`
       * capture information about front/back padding, stride, related kernel dimension
@@ -124,14 +124,21 @@ The individual fields of the SuperDSC to express an operation and its core mappi
     * second fold is for corelets, set as Const fold type
   * layout
     * stick layout/sizes
-      * add entry in std::map<DsTypes, PrimaryDsInfo> primaryDsInfo_ in sdsc.dscs_[0]
-      * fill std::vector stickDimOrder_ and std::vector stickSize_ in primaryDsInfo_ entry
-      * multiple tensors can share same primaryDsInfo_ entry if they have same stick layout
+      * add entry in `std::map<DsTypes, PrimaryDsInfo> primaryDsInfo_` in `sdsc.dscs_[0]`
+      * fill `std::vector stickDimOrder_` and `std::vector stickSize_` in `primaryDsInfo_` entry
+      * multiple tensors can share same `primaryDsInfo_` entry if they have same stick layout
     * Layout outside the stick
       * fill `std::vector<PrimaryDimTypes> layoutDimOrder_` in `primaryDsInfo` and `AllocateNode`
       * fill `std::vector<int> maxDimSizes_` in `AllocateNode`
         * set all to -1 (unbound) or to the page size in case of paged value tensor
-        * order matched `layoutDimOrder_in` `AllocateNode`
+        * order matches `layoutDimOrder_` in `AllocateNode`
+    * back-gaps
+      * fill `std::map<PrimaryDimTypes, std::map<int, int>> backGapCore_` in `AllocateNode` with the gaps in number of elements
+      * primary key is the dimension in which to apply the gap
+      * secondary `int` key is the core id
+        * useful when the gap is present in an LX allocation
+        * for HBM allocations, set to -1
+      * only back-gaps are considered, as front gaps should be handled by simply moving forward the start address
     * scale per dim (to represent reduction/broadcast)
       * 1 is normal, -1 is reduced/broadcasted, -2 is reduced/broadcasted stick dimension
       * `std::vector<double> scale_` in `sdsc.dscs_[0].labeledDs_[x]`
