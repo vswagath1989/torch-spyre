@@ -1,6 +1,3 @@
-// RUN: sdscbundle-opt %s | sdscbundle-opt | FileCheck --check-prefix=CHECK-IR %s
-// Round-tripping dummy test
-
 // In this example we want to demonstrate a bundle.mlir where symbols are passed into
 // SDSCs. They are used to specify start addresses for every core for each tensor.
 // These symbols are "fake" because they are constant in the mlir but they are still

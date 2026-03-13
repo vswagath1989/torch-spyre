@@ -1,7 +1,3 @@
-// RUN: sdscbundle-opt %s | sdscbundle-opt | FileCheck --check-prefix=CHECK-IR %s
-// Round-tripping dummy test
-
-
 // An example with a series of SDSCs without any symbol
 module {
   func.func @softmax_no_sym() {

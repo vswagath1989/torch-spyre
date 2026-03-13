@@ -1,9 +1,9 @@
-// RUN: sdscbundle-opt %s | sdscbundle-opt | FileCheck --check-prefix=CHECK-IR %s
-// Round-tripping dummy test
-
-
 // An example with multiple SDSCs in a loop. Start addresses change at every invokation of a SDSC based on the 
 // loop iteration but the base address of the tensors are constant and known.
+
+#B_start_address_map = affine_map<(d0, core)[base] -> (base + 1024*d0 + 256*core)>
+#C_start_address_map = affine_map<(d0, core)[base] -> (base + 256*d0 + 512*core)>
+
 module {
   func.func @loop_multi() {
     %c0 = arith.constant 0 : index
@@ -16,9 +16,6 @@ module {
     %A_base_address = arith.constant 1024 : index
     %B_base_address = arith.constant 12288 : index
     %C_base_address = arith.constant 17888 : index
-
-    #B_start_address_map = affine_map<(d0, core)[base] -> (base + 1024*d0 + 256*core)>
-    #C_start_address_map = affine_map<(d0, core)[base] -> (base + 256*d0 + 512*core)>
 
     scf.for %i = %c0 to %loop_bound step %c1 {  // no loop carried variables
 
