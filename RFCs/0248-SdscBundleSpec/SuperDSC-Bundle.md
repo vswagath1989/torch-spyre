@@ -316,8 +316,9 @@ For sum-nonstick/max-nonstick/min-nonstick/mean-nonstick/absmax-nonstick (there 
 * same stick layout in input and output
 
 #### Unary and Broadcast operations
-Any stick layout is acceptable, but all inputs and output must have same stick layout
-If an input has a broadcast along the stick dimension, then size of that dimension must be equal to number of elements in the stick (with only one valid element).
+Any stick layout is acceptable, but all inputs and output must have same stick layout.
+If a stick dimension has broadcast in a tensor, all stick dimensions of that tensor must have broadcast.
+If a stick dimension has broadcast in all tensors (inputs and output), then its size in the SDSC must be set to the number of elements that one stick would have if that dimension actually existed.
 
 #### Scan
 
